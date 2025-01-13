@@ -20,6 +20,11 @@ body {
   );
   overflow: hidden;
 }
+.container {
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+}
 .card {
   max-width: 450px;
   width: 100%;
@@ -31,11 +36,45 @@ body {
   padding-bottom: 10px;
 }
 .middle-card {
-  transform: scale(1.2); /* Scales the middle card */
-  z-index: 1; /* Places the middle card above the others */
-  position: relative; /* Ensures it doesn't overlap unexpectedly */
+  transform: scale(1.2);
+  z-index: 1;
+  position: relative;
   padding-bottom: 70px;
 }
+.container.scroll-down .card {
+  animation: scrollDown 0.5s ease forwards;
+}
+
+.container.scroll-up .card {
+  animation: scrollUp 0.5s ease forwards;
+}
+
+@keyframes scrollDown {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes scrollUp {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
+.middle-card {
+  transform: scale(1.2);
+  z-index: 1;
+  position: relative;
+  padding-bottom: 70px;
+  transition: transform 0.3s ease;
+}
+
 .card .btn {
   margin-bottom: 10px;
   height: 120px;
