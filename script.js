@@ -3,40 +3,42 @@ const cards = Array.from(document.querySelectorAll(".card"));
 let isAnimating = false;
 
 function updateCards(direction) {
-  if (isAnimating) return;
+  if (isAnimating) return; // Prevent multiple animations
   isAnimating = true;
 
-  container.classList.add(direction === "down" ? "scroll-down" : "scroll-up");
+  // Add the appropriate animation class
+  container.classList.add(`scroll-${direction}`);
 
+  // Wait for animation to complete before reordering and updating
   setTimeout(() => {
-    if (direction === "down") {
-      const firstCard = cards.shift(); //remove the first card
-      cards.push(firstCard); //add the first card to the end
-    } else {
-      const lastCard = cards.pop(); //remove the last card
-      cards.unshift(lastCard); //add the last card to the beginning
-    }
+    // Reorder cards based on direction
+    direction === "down"
+      ? cards.push(cards.shift()) // Move the first card to the end
+      : cards.unshift(cards.pop()); // Move the last card to the beginning
 
-    container.innerHTML = "";
-    cards.forEach((card, index) => {
-      card.classList.remove("middle-card");
-      container.appendChild(card);
-      if (index === 1) {
-        card.classList.add("middle-card");
-      }
-    });
-    container.classList.remove("scroll-down", "scroll-up");
+    // Update the DOM and assign the "middle-card" class
+    updateDOM();
+
+    // Reset animation state
+    container.classList.remove(`scroll-${direction}`);
     isAnimating = false;
-  }, 300);
+  }, 300); // Match with CSS animation duration
+}
+
+function updateDOM() {
+  container.innerHTML = ""; // Clear existing cards
+  cards.forEach((card, index) => {
+    card.classList.toggle("middle-card", index === 1); // Add "middle-card" to the second card
+    container.appendChild(card); // Append the card to the container
+  });
 }
 
 function handleScroll(event) {
-  if (event.deltaY > 0 || event.key === "ArrowDown") {
-    updateCards("down");
-  } else if (event.deltaY < 0 || event.key === "ArrowUp") {
-    updateCards("up");
-  }
+  const direction =
+    event.deltaY > 0 || event.key === "ArrowDown" ? "down" : "up";
+  updateCards(direction);
 }
 
+// Event listeners for scroll and key press
 document.addEventListener("wheel", handleScroll);
 document.addEventListener("keydown", handleScroll);
