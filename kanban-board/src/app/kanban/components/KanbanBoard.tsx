@@ -7,6 +7,11 @@ import {
   DragOverlay,
   DragStartEvent,
   closestCenter,
+  useSensor,
+  useSensors,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -30,7 +35,12 @@ export default function KanbanBoard() {
   );
   const [redoStack, setRedoStack] = useState<(typeof INITIAL_COLUMNS)[]>([]);
 
-  // Load columns from localStorage on mount
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor)
+  );
+
   useEffect(() => {
     const storedColumns = localStorage.getItem("kanbanColumns");
     if (storedColumns) {
@@ -38,14 +48,13 @@ export default function KanbanBoard() {
     }
   }, []);
 
-  // Save columns to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("kanbanColumns", JSON.stringify(columns));
   }, [columns]);
 
   const saveHistory = (newColumns: typeof INITIAL_COLUMNS) => {
     setHistory((prev) => [...prev, { columns }]);
-    setRedoStack([]); // Clear redo stack after new change
+    setRedoStack([]);
     setColumns(newColumns);
   };
 
@@ -166,10 +175,12 @@ export default function KanbanBoard() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="p-2 border rounded w-full"
+          aria-label="Search tasks"
         />
       </div>
 
       <DndContext
+        sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -204,26 +215,30 @@ export default function KanbanBoard() {
         <button
           onClick={undo}
           disabled={history.length === 0}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2 focus-visible:ring-2 focus-visible:ring-blue-300"
+          aria-label="Undo last action"
         >
           Undo
         </button>
         <button
           onClick={redo}
           disabled={redoStack.length === 0}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2 focus-visible:ring-2 focus-visible:ring-blue-300"
+          aria-label="Redo last action"
         >
           Redo
         </button>
         <button
           onClick={addColumn}
-          className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 mr-2"
+          className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 mr-2 focus-visible:ring-2 focus-visible:ring-green-300"
+          aria-label="Add a new column"
         >
           Add Column
         </button>
         <button
           onClick={resetBoard}
-          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"
+          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 focus-visible:ring-2 focus-visible:ring-red-300"
+          aria-label="Reset board to default"
         >
           Reset Board
         </button>

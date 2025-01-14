@@ -31,6 +31,8 @@ const Column: React.FC<ColumnProps> = ({
     <div
       ref={setNodeRef}
       className="border border-gray-300 p-4 w-72 bg-gray-50 rounded-md shadow-sm"
+      role="list"
+      aria-labelledby={`column-title-${column.id}`}
     >
       <div className="flex justify-between items-center mb-2">
         {isEditing ? (
@@ -42,19 +44,26 @@ const Column: React.FC<ColumnProps> = ({
               setIsEditing(false);
             }}
             autoFocus
-            className="border border-gray-300 rounded w-full p-1"
+            className="border border-gray-300 rounded w-full p-1 focus-visible:ring-2 focus-visible:ring-blue-300"
+            aria-label={`Rename column ${column.title}`}
           />
         ) : (
           <h3
+            id={`column-title-${column.id}`}
             className="font-bold text-lg cursor-pointer"
             onClick={() => setIsEditing(true)}
+            tabIndex={0}
+            role="button"
+            aria-label={`Column ${column.title}`}
+            onKeyDown={(e) => e.key === "Enter" && setIsEditing(true)}
           >
             {column.title}
           </h3>
         )}
         <button
           onClick={() => deleteColumn(column.id)}
-          className="text-red-500 text-sm hover:underline"
+          className="text-red-500 text-sm hover:underline focus-visible:ring-2 focus-visible:ring-red-300"
+          aria-label={`Delete column ${column.title}`}
         >
           Delete
         </button>
@@ -73,7 +82,14 @@ const Column: React.FC<ColumnProps> = ({
           value={newTask}
           placeholder="Add a task"
           onChange={(e) => setNewTask(e.target.value)}
-          className="w-full p-2 border rounded mb-2"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && newTask.trim()) {
+              addTaskToColumn(column.id, newTask);
+              setNewTask("");
+            }
+          }}
+          className="w-full p-2 border rounded mb-2 focus-visible:ring-2 focus-visible:ring-blue-300"
+          aria-label="Add new task"
         />
         <button
           onClick={() => {
@@ -82,7 +98,8 @@ const Column: React.FC<ColumnProps> = ({
               setNewTask("");
             }
           }}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 w-full"
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 w-full focus-visible:ring-2 focus-visible:ring-blue-300"
+          aria-label={`Add task to column ${column.title}`}
         >
           Add Task
         </button>

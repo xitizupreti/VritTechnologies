@@ -23,7 +23,10 @@ const Card: React.FC<CardProps> = ({ id }) => {
       {...listeners}
       className={`p-4 bg-white border ${
         isDragging ? "opacity-50 border-dashed" : "border-solid"
-      } rounded-md shadow-sm mb-2 cursor-pointer`}
+      } rounded-md shadow-sm mb-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-300`}
+      role="listitem"
+      tabIndex={0}
+      aria-label={`Task ${id}`}
     >
       {id}
     </div>
