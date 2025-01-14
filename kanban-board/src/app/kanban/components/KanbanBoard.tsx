@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCenter,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   horizontalListSortingStrategy,
@@ -32,25 +38,27 @@ export default function KanbanBoard() {
     localStorage.setItem("kanbanColumns", JSON.stringify(columns));
   }, [columns]);
 
-  const handleDragStart = ({ active }: any) => {
-    setActiveId(active.id);
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    setActiveId(active.id as string);
   };
 
-  const handleDragEnd = ({ active, over }: any) => {
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveId(null);
 
     if (!over) return;
 
-    const fromColumn = columns.find((col) => col.tasks.includes(active.id));
+    const fromColumn = columns.find((col) =>
+      col.tasks.includes(active.id as string)
+    );
     const toColumn = columns.find(
-      (col) => col.id === over.id || col.tasks.includes(over.id)
+      (col) => col.id === over.id || col.tasks.includes(over.id as string)
     );
 
     if (fromColumn && toColumn) {
       if (fromColumn === toColumn) {
         // Reorder within the same column
-        const oldIndex = fromColumn.tasks.indexOf(active.id);
-        const newIndex = fromColumn.tasks.indexOf(over.id);
+        const oldIndex = fromColumn.tasks.indexOf(active.id as string);
+        const newIndex = fromColumn.tasks.indexOf(over.id as string);
 
         setColumns((prev) =>
           prev.map((col) =>
@@ -69,10 +77,12 @@ export default function KanbanBoard() {
             col.id === fromColumn.id
               ? {
                   ...col,
-                  tasks: fromColumn.tasks.filter((task) => task !== active.id),
+                  tasks: fromColumn.tasks.filter(
+                    (task) => task !== (active.id as string)
+                  ),
                 }
               : col.id === toColumn.id
-              ? { ...col, tasks: [...toColumn.tasks, active.id] }
+              ? { ...col, tasks: [...toColumn.tasks, active.id as string] }
               : col
           )
         );
