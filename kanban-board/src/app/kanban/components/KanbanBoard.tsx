@@ -9,22 +9,18 @@ import {
 } from "@dnd-kit/sortable";
 import Column from "./Column";
 
-export default function KanbanBoard() {
-  const initialColumns = [
-    { id: "todo", title: "To Do", tasks: ["Task 1", "Task 2", "Task 3"] },
-    { id: "in-progress", title: "In Progress", tasks: ["Task 4", "Task 5"] },
-    { id: "done", title: "Done", tasks: ["Task 6"] },
-  ];
+const INITIAL_COLUMNS = [
+  { id: "todo", title: "To Do", tasks: ["Task 1", "Task 2", "Task 3"] },
+  { id: "in-progress", title: "In Progress", tasks: ["Task 4", "Task 5"] },
+  { id: "done", title: "Done", tasks: ["Task 6"] },
+];
 
-  // State for columns
-  const [columns, setColumns] = useState(initialColumns);
-  const [isClient, setIsClient] = useState(false); // Tracks if rendering on the client
+export default function KanbanBoard() {
+  const [columns, setColumns] = useState(INITIAL_COLUMNS);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // On mount, load columns from localStorage if available
+  // Load columns from localStorage on mount
   useEffect(() => {
-    setIsClient(true); // Mark as client-side rendering
-
     const storedColumns = localStorage.getItem("kanbanColumns");
     if (storedColumns) {
       setColumns(JSON.parse(storedColumns));
@@ -33,20 +29,18 @@ export default function KanbanBoard() {
 
   // Save columns to localStorage whenever they change
   useEffect(() => {
-    if (isClient) {
-      localStorage.setItem("kanbanColumns", JSON.stringify(columns));
-    }
-  }, [columns, isClient]);
+    localStorage.setItem("kanbanColumns", JSON.stringify(columns));
+  }, [columns]);
 
-  const handleDragStart = (event: any) => {
-    setActiveId(event.active.id);
+  const handleDragStart = ({ active }: any) => {
+    setActiveId(active.id);
   };
 
-  const handleDragEnd = (event: any) => {
-    const { active, over } = event;
-    if (!over) return; // If no drop location, do nothing
+  const handleDragEnd = ({ active, over }: any) => {
+    setActiveId(null);
 
-    // Find the column where the task was dragged
+    if (!over) return;
+
     const fromColumn = columns.find((col) => col.tasks.includes(active.id));
     const toColumn = columns.find(
       (col) => col.id === over.id || col.tasks.includes(over.id)
@@ -54,30 +48,31 @@ export default function KanbanBoard() {
 
     if (fromColumn && toColumn) {
       if (fromColumn === toColumn) {
-        // If the task is moved within the same column
+        // Reorder within the same column
         const oldIndex = fromColumn.tasks.indexOf(active.id);
         const newIndex = fromColumn.tasks.indexOf(over.id);
-
-        const updatedTasks = arrayMove(fromColumn.tasks, oldIndex, newIndex);
-
-        setColumns((prev) =>
-          prev.map((col) =>
-            col.id === fromColumn.id ? { ...col, tasks: updatedTasks } : col
-          )
-        );
-      } else {
-        // If the task is moved between different columns
-        const updatedFromTasks = fromColumn.tasks.filter(
-          (task) => task !== active.id
-        );
-        const updatedToTasks = [...toColumn.tasks, active.id];
 
         setColumns((prev) =>
           prev.map((col) =>
             col.id === fromColumn.id
-              ? { ...col, tasks: updatedFromTasks }
+              ? {
+                  ...col,
+                  tasks: arrayMove(fromColumn.tasks, oldIndex, newIndex),
+                }
+              : col
+          )
+        );
+      } else {
+        // Move between columns
+        setColumns((prev) =>
+          prev.map((col) =>
+            col.id === fromColumn.id
+              ? {
+                  ...col,
+                  tasks: fromColumn.tasks.filter((task) => task !== active.id),
+                }
               : col.id === toColumn.id
-              ? { ...col, tasks: updatedToTasks }
+              ? { ...col, tasks: [...toColumn.tasks, active.id] }
               : col
           )
         );
@@ -85,9 +80,9 @@ export default function KanbanBoard() {
     }
   };
 
-  const handleClearStorage = () => {
-    localStorage.removeItem("kanbanColumns"); // Clear the stored data
-    setColumns(initialColumns); // Reset to initial state
+  const resetBoard = () => {
+    localStorage.removeItem("kanbanColumns");
+    setColumns(INITIAL_COLUMNS);
   };
 
   return (
@@ -109,20 +104,20 @@ export default function KanbanBoard() {
         </SortableContext>
 
         <DragOverlay>
-          {activeId ? (
+          {activeId && (
             <div className="p-4 bg-white border border-gray-300 rounded shadow-md">
               {activeId}
             </div>
-          ) : null}
+          )}
         </DragOverlay>
       </DndContext>
 
       <div className="mt-8 text-center">
         <button
-          onClick={handleClearStorage}
+          onClick={resetBoard}
           className="px-8 py-4 bg-red-500 text-white rounded-lg text-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
         >
-          Clear Local Storage
+          Reset Board
         </button>
       </div>
     </div>

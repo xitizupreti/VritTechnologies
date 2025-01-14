@@ -6,11 +6,15 @@ import {
 } from "@dnd-kit/sortable";
 import Card from "./Card";
 
-export default function Column({
-  column,
-}: {
-  column: { id: string; title: string; tasks: string[] };
-}) {
+type ColumnProps = {
+  column: {
+    id: string;
+    title: string;
+    tasks: string[];
+  };
+};
+
+const Column: React.FC<ColumnProps> = ({ column }) => {
   const { setNodeRef } = useDroppable({ id: column.id });
 
   return (
@@ -29,4 +33,6 @@ export default function Column({
       </SortableContext>
     </div>
   );
-}
+};
+
+export default Column;
