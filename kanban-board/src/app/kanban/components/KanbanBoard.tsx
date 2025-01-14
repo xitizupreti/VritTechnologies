@@ -24,6 +24,11 @@ const INITIAL_COLUMNS = [
 export default function KanbanBoard() {
   const [columns, setColumns] = useState(INITIAL_COLUMNS);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [history, setHistory] = useState<{ columns: typeof INITIAL_COLUMNS }[]>(
+    []
+  );
+  const [redoStack, setRedoStack] = useState<(typeof INITIAL_COLUMNS)[]>([]);
 
   // Load columns from localStorage on mount
   useEffect(() => {
@@ -37,6 +42,12 @@ export default function KanbanBoard() {
   useEffect(() => {
     localStorage.setItem("kanbanColumns", JSON.stringify(columns));
   }, [columns]);
+
+  const saveHistory = (newColumns: typeof INITIAL_COLUMNS) => {
+    setHistory((prev) => [...prev, { columns }]);
+    setRedoStack([]); // Clear redo stack after new change
+    setColumns(newColumns);
+  };
 
   const handleDragStart = ({ active }: DragStartEvent) => {
     setActiveId(active.id as string);
@@ -56,12 +67,11 @@ export default function KanbanBoard() {
 
     if (fromColumn && toColumn) {
       if (fromColumn === toColumn) {
-        // Reorder within the same column
         const oldIndex = fromColumn.tasks.indexOf(active.id as string);
         const newIndex = fromColumn.tasks.indexOf(over.id as string);
 
-        setColumns((prev) =>
-          prev.map((col) =>
+        saveHistory(
+          columns.map((col) =>
             col.id === fromColumn.id
               ? {
                   ...col,
@@ -71,9 +81,8 @@ export default function KanbanBoard() {
           )
         );
       } else {
-        // Move between columns
-        setColumns((prev) =>
-          prev.map((col) =>
+        saveHistory(
+          columns.map((col) =>
             col.id === fromColumn.id
               ? {
                   ...col,
@@ -90,13 +99,76 @@ export default function KanbanBoard() {
     }
   };
 
+  const addColumn = () => {
+    const newColumn = {
+      id: `column-${Date.now()}`,
+      title: `New Column`,
+      tasks: [],
+    };
+    saveHistory([...columns, newColumn]);
+  };
+
+  const deleteColumn = (columnId: string) => {
+    saveHistory(columns.filter((col) => col.id !== columnId));
+  };
+
+  const renameColumn = (columnId: string, newTitle: string) => {
+    saveHistory(
+      columns.map((col) =>
+        col.id === columnId ? { ...col, title: newTitle } : col
+      )
+    );
+  };
+
+  const addTaskToColumn = (columnId: string, task: string) => {
+    saveHistory(
+      columns.map((col) =>
+        col.id === columnId ? { ...col, tasks: [...col.tasks, task] } : col
+      )
+    );
+  };
+
   const resetBoard = () => {
     localStorage.removeItem("kanbanColumns");
-    setColumns(INITIAL_COLUMNS);
+    saveHistory(INITIAL_COLUMNS);
   };
+
+  const undo = () => {
+    if (history.length > 0) {
+      const lastState = history[history.length - 1];
+      setHistory((prev) => prev.slice(0, -1));
+      setRedoStack((prev) => [columns, ...prev]);
+      setColumns(lastState.columns);
+    }
+  };
+
+  const redo = () => {
+    if (redoStack.length > 0) {
+      const nextState = redoStack[0];
+      setRedoStack((prev) => prev.slice(1));
+      saveHistory(nextState);
+    }
+  };
+
+  const filteredColumns = columns.map((col) => ({
+    ...col,
+    tasks: col.tasks.filter((task) =>
+      task.toLowerCase().includes(searchTerm.toLowerCase())
+    ),
+  }));
 
   return (
     <div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search tasks..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 border rounded w-full"
+        />
+      </div>
+
       <DndContext
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
@@ -107,8 +179,14 @@ export default function KanbanBoard() {
           strategy={horizontalListSortingStrategy}
         >
           <div className="flex gap-4 p-4">
-            {columns.map((column) => (
-              <Column key={column.id} column={column} />
+            {filteredColumns.map((column) => (
+              <Column
+                key={column.id}
+                column={column}
+                deleteColumn={deleteColumn}
+                renameColumn={renameColumn}
+                addTaskToColumn={addTaskToColumn}
+              />
             ))}
           </div>
         </SortableContext>
@@ -124,8 +202,28 @@ export default function KanbanBoard() {
 
       <div className="mt-8 text-center">
         <button
+          onClick={undo}
+          disabled={history.length === 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2"
+        >
+          Undo
+        </button>
+        <button
+          onClick={redo}
+          disabled={redoStack.length === 0}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 mr-2"
+        >
+          Redo
+        </button>
+        <button
+          onClick={addColumn}
+          className="px-4 py-2 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 mr-2"
+        >
+          Add Column
+        </button>
+        <button
           onClick={resetBoard}
-          className="px-8 py-4 bg-red-500 text-white rounded-lg text-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300"
+          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600"
         >
           Reset Board
         </button>

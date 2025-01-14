@@ -10,6 +10,8 @@ const Card: React.FC<CardProps> = ({ id }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
 
+  const isDragging = transform !== null;
+
   return (
     <div
       ref={setNodeRef}
@@ -19,7 +21,9 @@ const Card: React.FC<CardProps> = ({ id }) => {
       }}
       {...attributes}
       {...listeners}
-      className="p-4 bg-white border border-gray-200 rounded-md shadow-sm mb-2 cursor-pointer"
+      className={`p-4 bg-white border ${
+        isDragging ? "opacity-50 border-dashed" : "border-solid"
+      } rounded-md shadow-sm mb-2 cursor-pointer`}
     >
       {id}
     </div>
