@@ -1,14 +1,14 @@
-"use client";
-import React from "react";
+import Link from "next/link";
 
-const Home = () => {
+export default function Home() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600">
-        Welcome to the Kanban Board!
-      </h1>
+    <div className="text-center mt-8">
+      <h1 className="text-2xl font-bold">Welcome to the Kanban Board</h1>
+      <Link href="/kanban">
+        <button className="mt-4 px-6 py-3 text-lg text-white bg-red-500 rounded hover:bg-red-600 transition">
+          Go to Kanban Board
+        </button>
+      </Link>
     </div>
   );
-};
-
-export default Home;
+}
