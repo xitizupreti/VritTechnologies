@@ -3,6 +3,29 @@
   padding: 0;
   box-sizing: border-box;
 }
+.start {
+  cursor: pointer;
+  display: grid;
+  background-color: aqua;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+  height: 200px;
+  width: 300px;
+  font-size: larger;
+  font-weight: bolder;
+  color: blue;
+}
+
+.start:hover {
+  background-color: green;
+}
+
+.start:active {
+  background-color: #3e8e41;
+  box-shadow: 20px 20px 10px greenyellow;
+  transform: translateY(4px);
+}
 body {
   height: 100vh;
   display: flex;
