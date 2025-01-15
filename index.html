@@ -17,13 +17,17 @@
       class="start"
       type="button"
       value="Task B"
-      onclick="alert('Task B (Working)'); window.location.href='https://xitiz-vrit-technologies.vercel.app/';"
+      onclick="alert('Working, Wait...'); window.location.href='https://xitiz-vrit-technologies.vercel.app/';"
     />
     <input
       class="start"
       type="button"
       value="Task C (404 Error)"
-      onclick="alert('Task C (Redirecting...)'); window.location.href='https://www.kshitizupreti.com.np/';"
+      onclick="
+    if (confirm('Are you sure you want to proceed to somewhere?')) {
+      window.location.href = 'https://www.kshitizupreti.com.np/';
+    }
+  "
     />
   </body>
 </html>

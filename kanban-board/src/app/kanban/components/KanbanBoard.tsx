@@ -189,7 +189,7 @@ export default function KanbanBoard() {
           items={columns.map((col) => col.id)}
           strategy={horizontalListSortingStrategy}
         >
-          <div className="flex gap-4 p-4">
+          <div className="flex flex-wrap md:flex-row flex-col gap-4 p-4">
             {filteredColumns.map((column) => (
               <Column
                 key={column.id}
