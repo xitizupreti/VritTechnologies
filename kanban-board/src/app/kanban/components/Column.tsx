@@ -43,6 +43,13 @@ const Column: React.FC<ColumnProps> = ({
               renameColumn(column.id, e.target.value);
               setIsEditing(false);
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // Prevent default form submission behavior
+                renameColumn(column.id, (e.target as HTMLInputElement).value); // Submit the new title
+                setIsEditing(false); // Exit edit mode
+              }
+            }}
             autoFocus
             className="border border-gray-300 rounded w-full p-1 focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label={`Rename column ${column.title}`}
